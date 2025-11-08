@@ -1,32 +1,29 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BreakOut Game by บุณยกร พฤกษ์ทยานนท์</title>
-  <link rel="stylesheet" href="css_1.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Game Showcase</title>
+  <link rel="stylesheet" href="css_1.css">
 </head>
 <body>
-  <div class="card">
-    <h1>🎮 BreakOut Game</h1>
-    <p>
-      เกมที่พัฒนาโดย <strong>PPLPLP</strong><br>
-      คลิกปุ่มด้านล่างเพื่อดาวน์โหลดเกม
-    </p>
+  <div class="container">
+    <h1>🎮 My Game Showcase</h1>
+    <p>ยินดีต้อนรับ! นี่คือเกมที่ผมพัฒนาด้วย Unity / HTML5</p>
 
-    <a class="download-btn"
-       href="https://drive.google.com/uc?export=download&id=1q1R6bqMtJR5aQf8An2xADDQ4kwA_4kDk"
-       target="_blank">
-       ⬇ ดาวน์โหลด BreakOut (RAR)
-    </a>
+    <div class="game-card">
+      <h2>GAME BY บุณยกร พฤกษ์ทยานนท์</h2>
 
-    <img class="qr"
-         src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://pplplp.github.io/my-game/"
-         alt="QR Code" />
+      <!-- ถ้ามีไฟล์เกม HTML (WebGL) -->
+      <a href="minesweeper.html" target="_blank" class="play-btn">▶ เล่น Minesweeper</a>
 
-    <footer>สแกน QR เพื่อเข้าเว็บนี้</footer>
+      <!-- ถ้าอยากให้ดาวน์โหลด -->
+      <a href="https://drive.google.com/uc?export=download&id=1q1R6bqMtJR5aQf8An2xADDQ4kwA_4kDk" download class="download-btn">⬇ ดาวน์โหลด เกม breakout</a>
+    </div>
+
+    <footer>
+      <p>สร้างโดย <b>บุณยกร พฤกษ์ทยานนท์</b></p>
+    </footer>
   </div>
 </body>
-
 </html>
