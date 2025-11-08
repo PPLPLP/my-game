@@ -5,52 +5,31 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Minesweeper - เลือกระดับความยาก</title>
 <style>
-  body {
-    font-family: "Segoe UI", sans-serif;
-    text-align: center;
-    margin: 0; padding: 20px;
-    transition: background-color 0.3s, color 0.3s;
-  }
-  h1 { margin-bottom: 10px; }
-  select, button {
-    padding: 8px 16px; margin: 10px; font-size: 16px;
-    border-radius: 6px; border: none; cursor: pointer;
-  }
-  #board {
-    display: grid; justify-content: center; margin: 20px auto; gap: 2px;
-  }
-  .cell {
-    width: 28px; height: 28px;
-    display: flex; justify-content: center; align-items: center;
-    font-size: 15px; cursor: pointer; border-radius: 5px;
-    user-select: none; transition: background 0.15s;
-  }
-  .cell.revealed { cursor: default; }
-  .cell.mine { color: white; }
-  #win-screen {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.9);
-    display: flex; flex-direction: column; justify-content: center; align-items: center;
-    text-align: center; color: #fff; z-index: 999; visibility: hidden; opacity: 0;
-    transition: opacity 0.4s, visibility 0.4s;
-  }
-  #win-screen.show { visibility: visible; opacity: 1; }
-  #win-screen h2 { font-size: 2.5em; color: #3fb950; margin-bottom: 10px; }
-  #win-screen p { color: #8b949e; margin-bottom: 20px; }
-  #win-screen button { background-color: #238636; color: white; border-radius: 8px;
-    padding: 10px 20px; font-size: 18px; cursor: pointer; border: none; }
-  #win-screen button:hover { background-color: #2ea043; }
+  body { font-family:"Segoe UI"; text-align:center; margin:0; padding:20px; transition:background 0.3s,color 0.3s; }
+  h1 { margin-bottom:10px; }
+  select, button { padding:8px 16px; margin:10px; font-size:16px; border-radius:6px; border:none; cursor:pointer; }
+  #board { display:grid; justify-content:center; margin:20px auto; gap:2px; }
+  .cell { width:28px;height:28px; display:flex; justify-content:center; align-items:center; font-size:15px; cursor:pointer; border-radius:5px; user-select:none; transition:background 0.15s; }
+  .cell.revealed { cursor:default; }
+  .cell.mine { color:white; }
+  #win-screen { position:fixed; inset:0; background:rgba(0,0,0,0.9); display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; color:#fff; z-index:999; visibility:hidden; opacity:0; transition:opacity 0.4s, visibility 0.4s; }
+  #win-screen.show { visibility:visible; opacity:1; }
+  #win-screen h2 { font-size:2.5em; color:#3fb950; margin-bottom:10px; }
+  #win-screen p { color:#8b949e; margin-bottom:20px; }
+  #win-screen button { background-color:#238636; color:white; border-radius:8px; padding:10px 20px; font-size:18px; cursor:pointer; border:none; }
+  #win-screen button:hover { background-color:#2ea043; }
 
-  /* ธีมมืด */
-  body.dark { background-color: #0d1117; color: #e6edf3; }
-  body.dark .cell { background-color: #161b22; border: 1px solid #30363d; }
-  body.dark .cell.revealed { background-color: #21262d; }
-  body.dark .cell.mine { background-color: #da3633; }
+  body.dark { background-color:#0d1117; color:#e6edf3; }
+  body.dark .cell { background-color:#161b22; border:1px solid #30363d; }
+  body.dark .cell.revealed { background-color:#21262d; }
+  body.dark .cell.mine { background-color:#da3633; }
 
-  /* ธีมสว่าง */
-  body.light { background-color: #f0f0f0; color: #111; }
-  body.light .cell { background-color: #fff; border: 1px solid #aaa; }
-  body.light .cell.revealed { background-color: #ddd; }
-  body.light .cell.mine { background-color: #e03e3e; }
+  body.light { background-color:#f0f0f0; color:#111; }
+  body.light .cell { background-color:#fff; border:1px solid #aaa; }
+  body.light .cell.revealed { background-color:#ddd; }
+  body.light .cell.mine { background-color:#e03e3e; }
+
+  canvas.confetti { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:1000; }
 </style>
 </head>
 <body class="dark">
@@ -77,9 +56,18 @@
 
 <div id="win-screen">
   <h2>🎉 ยินดีด้วย! 🎉</h2>
-  <p>คุณเคลียร์กระดานได้สำเร็จ!</p>
+  <p>คุณเคลียร์กระดานได้สำเร็จโดยไม่โดนระเบิด!</p>
   <button onclick="closeWinScreen()">เล่นอีกครั้ง 🔁</button>
 </div>
+
+<audio id="bg-music" src="225d00c3-251f-401b-bd89-f0529e917ccf.mp3" loop autoplay></audio>
+<audio id="click-sound" src="https://freesound.org/data/previews/256/256113_3263906-lq.mp3"></audio>
+<audio id="bomb-sound" src="https://pixabay.com/th/sound-effects/explosion-fx-343683/"></audio>
+<audio id="win-sound" src="0186ae7b-a88d-42c5-9e6f-83ee624eaaad.mp3"></audio>
+
+<canvas id="confetti-canvas" class="confetti"></canvas>
+
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
 <script>
 let rows, cols, mineCount;
@@ -88,6 +76,9 @@ let revealedCount = 0;
 let gameOver = false;
 const board = document.getElementById('board');
 const winScreen = document.getElementById('win-screen');
+const clickSound = document.getElementById('click-sound');
+const bombSound = document.getElementById('bomb-sound');
+const winSound = document.getElementById('win-sound');
 
 function startGame() {
   const difficulty = document.getElementById('difficulty').value;
@@ -104,7 +95,6 @@ function startGame() {
 function init() {
   gameOver=false; revealedCount=0; grid=[]; board.innerHTML='';
   winScreen.classList.remove('show');
-
   board.style.gridTemplateColumns=`repeat(${cols},28px)`;
   for(let r=0;r<rows;r++){
     grid[r]=[];
@@ -152,10 +142,11 @@ function reveal(r,c){
   if(cell.revealed||cell.flagged) return;
   cell.revealed=true; revealedCount++;
   cell.el.classList.add('revealed');
+  clickSound.play();
 
   if(cell.mine){
     cell.el.classList.add('mine'); cell.el.textContent="💣";
-    gameOver=true; revealAllMines();
+    gameOver=true; revealAllMines(); bombSound.play();
     setTimeout(()=>alert("💥 เกมจบ! คุณเจอกับระเบิด!"),100);
     return;
   }
@@ -185,9 +176,13 @@ function revealAllMines(){
   }}
 }
 
-function showWinScreen(){ gameOver=true; winScreen.classList.add('show'); }
-function closeWinScreen(){ winScreen.classList.remove('show'); init(); }
+function showWinScreen(){
+  gameOver=true; winScreen.classList.add('show'); winSound.play();
+  confetti({particleCount:150,spread:70,origin:{y:0.6}});
+  confetti({particleCount:100,spread:100,origin:{y:0.6}});
+}
 
+function closeWinScreen(){ winScreen.classList.remove('show'); init(); }
 </script>
 </body>
 </html>
