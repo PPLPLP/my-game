@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Minesweeper 24x24</title>
+  <style>
+    body {
+      background-color: #0d1117;
+      color: #e6edf3;
+      font-family: "Segoe UI", sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 { color: #58a6ff; margin-bottom: 10px; }
+    #board {
+      display: grid;
+      justify-content: center;
+      margin: 20px auto;
+      grid-template-columns: repeat(24, 28px);
+      gap: 2px;
+    }
+    .cell {
+      width: 28px;
+      height: 28px;
+      background-color: #161b22;
+      border: 1px solid #30363d;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 15px;
+      cursor: pointer;
+      border-radius: 5px;
+      transition: background 0.15s;
+      user-select: none;
+    }
+    .cell:hover { background-color: #1f242a; }
+    .cell.revealed {
+      background-color: #21262d;
+      cursor: default;
+    }
+    .cell.mine {
+      background-color: #da3633;
+      color: white;
+    }
+    .info {
+      margin-top: 10px;
+      color: #8b949e;
+    }
+    button {
+      background-color: #238636;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 16px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover {
+      background-color: #2ea043;
+    }
+  </style>
+</head>
+<body>
+  <h1>💣 Minesweeper 24×24</h1>
+  <p class="info">ระเบิดทั้งหมด: <b>99</b> ลูก | คลิกซ้าย = เปิด, คลิกขวา = ปักธง 🚩</p>
+  <div id="board"></div>
+  <button onclick="init()">เริ่มใหม่ 🔄</button>
+
+  <script>
+    const rows = 24, cols = 24, mineCount = 99;
+    const board = document.getElementById("board");
+    let grid = [];
+    let revealedCount = 0;
+    let gameOver = false;
+
+    function init() {
+      gameOver = false;
+      revealedCount = 0;
+      grid = [];
+      board.innerHTML = "";
+      for (let r = 0; r < rows; r++) {
+        grid[r] = [];
+        for (let c = 0; c < cols; c++) {
+          const cell = document.createElement("div");
+          cell.classList.add("cell");
+          cell.dataset.row = r;
+          cell.dataset.col = c;
+          cell.addEventListener("click", () => reveal(r, c));
+          cell.addEventListener("contextmenu", (e) => {
+            e.preventDefault();
+            toggleFlag(r, c);
+          });
+          board.appendChild(cell);
+          grid[r][c] = { mine: false, revealed: false, flagged: false, el: cell, number: 0 };
+        }
+      }
+      placeMines();
+      calculateNumbers();
+    }
+
+    function placeMines() {
+      let placed = 0;
+      while (placed < mineCount) {
+        const r = Math.floor(Math.random() * rows);
+        const c = Math.floor(Math.random() * cols);
+        if (!grid[r][c].mine) {
+          grid[r][c].mine = true;
+          placed++;
+        }
+      }
+    }
+
+    function calculateNumbers() {
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          if (grid[r][c].mine) continue;
+          let count = 0;
+          for (let dr = -1; dr <= 1; dr++) {
+            for (let dc = -1; dc <= 1; dc++) {
+              const nr = r + dr, nc = c + dc;
+              if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && grid[nr][nc].mine) count++;
+            }
+          }
+          grid[r][c].number = count;
+        }
+      }
+    }
+
+    function reveal(r, c) {
+      if (gameOver) return;
+      const cell = grid[r][c];
+      if (cell.revealed || cell.flagged) return;
+      cell.revealed = true;
+      revealedCount++;
+      cell.el.classList.add("revealed");
+
+      if (cell.mine) {
+        cell.el.classList.add("mine");
+        cell.el.textContent = "💣";
+        gameOver = true;
+        revealAllMines();
+        setTimeout(() => alert("💥 เกมจบ! คุณเจอกับระเบิด!"), 100);
+        return;
+      }
+
+      if (cell.number > 0) {
+        cell.el.textContent = cell.number;
+        cell.el.style.color = ["#58a6ff","#3fb950","#f0883e","#f85149","#a371f7","#ff79c6","#00ffff","#ffffff"][cell.number - 1];
+      } else {
+        // เปิดช่องรอบข้างอัตโนมัติ
+        for (let dr = -1; dr <= 1; dr++) {
+          for (let dc = -1; dc <= 1; dc++) {
+            const nr = r + dr, nc = c + dc;
+            if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
+              reveal(nr, nc);
+            }
+          }
+        }
+      }
+
+      if (checkWin()) {
+        gameOver = true;
+        setTimeout(() => alert("🎉 ยินดีด้วย! คุณชนะแล้ว!"), 100);
+      }
+    }
+
+    function toggleFlag(r, c) {
+      if (gameOver) return;
+      const cell = grid[r][c];
+      if (cell.revealed) return;
+      cell.flagged = !cell.flagged;
+      cell.el.textContent = cell.flagged ? "🚩" : "";
+    }
+
+    function revealAllMines() {
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const cell = grid[r][c];
+          if (cell.mine) {
+            cell.el.textContent = "💣";
+            cell.el.classList.add("mine");
+          }
+        }
+      }
+    }
+
+    function checkWin() {
+      let totalSafe = rows * cols - mineCount;
+      return revealedCount === totalSafe;
+    }
+
+    init();
+  </script>
+</body>
+</html>
