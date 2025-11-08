@@ -12,7 +12,7 @@ body {
   background: #3b82f6;
   padding: 30px;
   border-radius: 20px;
-  box-shadow: 0 0 20px rgba(0,0,0,0.3);
+  box-shadow: 0 0 20px rgba(206, 206, 206, 0.445);
   width: 90%;
   max-width: 500px;
   text-align: center;
@@ -51,3 +51,4 @@ footer {
   font-size: 14px;
   opacity: 0.8;
 }
+
